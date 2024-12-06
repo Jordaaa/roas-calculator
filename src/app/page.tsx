@@ -1,101 +1,162 @@
-import Image from "next/image";
+// src/app/page.tsx
+'use client'
+
+import { useState, useEffect } from "react"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [values, setValues] = useState({
+    adSpend: 500,
+    orders: 20,
+    avgOrderValue: 50
+  })
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [metrics, setMetrics] = useState({
+    totalSales: 1000,
+    roas: 2.0,
+    profit: 500,
+    acos: 50.0
+  })
+
+  useEffect(() => {
+    const totalSales = values.orders * values.avgOrderValue
+    const roas = values.adSpend === 0 ? 0 : totalSales / values.adSpend
+    const profit = totalSales - values.adSpend
+    const acos = totalSales === 0 ? 0 : (values.adSpend / totalSales) * 100
+
+    setMetrics({
+      totalSales,
+      roas,
+      profit,
+      acos
+    })
+  }, [values])
+
+  const generateChartData = () => {
+    return Array.from({ length: 41 }, (_, i) => ({
+      orders: i,
+      revenue: i * values.avgOrderValue,
+      adSpend: values.adSpend
+    }))
+  }
+
+  return (
+    <main className="min-h-screen bg-[#1A1A1A] p-8">
+      <div className="max-w-3xl mx-auto space-y-8">
+        <h1 className="text-2xl font-bold text-white">ROAS Calculator</h1>
+        
+        {/* Ad Spend Slider */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-gray-300">
+            <span>Ad Spend ($)</span>
+            <span>${values.adSpend}</span>
+          </div>
+          <input 
+            type="range"
+            value={values.adSpend}
+            onChange={(e) => setValues(prev => ({ ...prev, adSpend: Number(e.target.value) }))}
+            min="0"
+            max="1000"
+            step="10"
+            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        {/* Order Values Section */}
+        <div className="flex items-center gap-4 text-gray-300">
+          <div className="flex-1 space-y-2">
+            <div className="flex justify-between">
+              <span>Number of Orders</span>
+              <span>{values.orders}</span>
+            </div>
+            <input 
+              type="range"
+              value={values.orders}
+              onChange={(e) => setValues(prev => ({ ...prev, orders: Number(e.target.value) }))}
+              min="0"
+              max="40"
+              step="1"
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+          
+          <span className="text-2xl">×</span>
+          
+          <div className="flex-1 space-y-2">
+            <div className="flex justify-between">
+              <span>Average Order Value ($)</span>
+              <span>{values.avgOrderValue}</span>
+            </div>
+            <input 
+              type="range"
+              value={values.avgOrderValue}
+              onChange={(e) => setValues(prev => ({ ...prev, avgOrderValue: Number(e.target.value) }))}
+              min="0"
+              max="100"
+              step="5"
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+          
+          <span className="text-2xl">=</span>
+          
+          <div className="text-right">
+            <div className="text-sm">Total Sales</div>
+            <div className="text-2xl text-purple-400">${metrics.totalSales}</div>
+          </div>
+        </div>
+
+        {/* Metrics Cards */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 bg-[#252525] rounded-lg">
+            <div className="text-sm text-gray-400">ROAS</div>
+            <div className="text-xl text-purple-400">{metrics.roas.toFixed(1)}x</div>
+          </div>
+          <div className="p-4 bg-[#252525] rounded-lg">
+            <div className="text-sm text-gray-400">Profit</div>
+            <div className="text-xl text-purple-400">${metrics.profit}</div>
+          </div>
+          <div className="p-4 bg-[#252525] rounded-lg">
+            <div className="text-sm text-gray-400">ACOS</div>
+            <div className="text-xl text-purple-400">{metrics.acos.toFixed(1)}%</div>
+          </div>
+        </div>
+
+        {/* Explanation Text */}
+        <div className="space-y-2 text-sm text-gray-400">
+          <p>If you spend ${values.adSpend} on advertising to get ${metrics.totalSales} in sales from {values.orders} orders with an average order value of ${values.avgOrderValue}, your ROAS will be {metrics.roas.toFixed(1)}x.</p>
+          <p>This indicates that for every $1 spent on ads, you earn ${metrics.roas.toFixed(2)} in revenue.</p>
+          <p>Your ACOS (Advertising Cost of Sale) indicates that {metrics.acos.toFixed(1)}% of your revenue will go to advertising costs. You have an additional {(100 - metrics.acos).toFixed(1)}% (${metrics.profit}) to cover additional expenses and keep a profit.</p>
+        </div>
+
+        {/* Performance Chart */}
+        <div className="space-y-4">
+          <h3 className="text-white">Performance Analysis</h3>
+          <div className="h-64 bg-[#252525] rounded-lg p-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={generateChartData()} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <CartesianGrid stroke="#333" />
+                <XAxis dataKey="orders" stroke="#666" />
+                <YAxis stroke="#666" />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#8B5CF6" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="adSpend" 
+                  stroke="#EF4444" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
 }
